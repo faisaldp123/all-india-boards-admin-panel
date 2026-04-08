@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import API from "@/lib/api";
+import useAdminAuth from "@/hooks/useAdminAuth";
 
 import { Grid, Typography, Box } from "@mui/material";
 
@@ -21,6 +22,7 @@ export default function Dashboard() {
   const [stats,setStats] = useState({});
   const [orders,setOrders] = useState([]);
   const [products,setProducts] = useState([]);
+  useAdminAuth();
 
   useEffect(()=>{
 

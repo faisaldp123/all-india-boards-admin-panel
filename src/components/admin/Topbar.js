@@ -37,7 +37,7 @@ export default function Topbar() {
 
   const logout = () => {
     localStorage.removeItem("adminToken");
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   return (
