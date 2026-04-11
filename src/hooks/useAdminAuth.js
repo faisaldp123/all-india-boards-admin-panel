@@ -10,7 +10,7 @@ export default function useAdminAuth() {
     const token = localStorage.getItem("adminToken");
 
     if (!token) {
-      router.push("/");
+      router.push("/login");
     }
   }, []);
 }

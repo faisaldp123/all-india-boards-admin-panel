@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import API from "@/lib/api";
 
 import {
@@ -18,17 +19,35 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  CircularProgress,
 } from "@mui/material";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const router = useRouter();
+
+  // ✅ PROTECT ROUTE
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      router.push("/login");
+    }
+  }, [router]);
 
   // ================= FETCH =================
   const fetchCategories = async () => {
-    const res = await API.get("/categories");
-    setCategories(res.data);
+    try {
+      const res = await API.get("/categories");
+      setCategories(res.data);
+    } catch (err) {
+      console.error("FETCH ERROR:", err);
+    }
   };
 
   useEffect(() => {
@@ -37,22 +56,49 @@ export default function CategoriesPage() {
 
   // ================= ADD CATEGORY =================
   const addCategory = async () => {
-    try {
-      await API.post("/categories", { name });
+    if (!name.trim()) {
+      setError("Category name is required");
+      return;
+    }
 
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
+
+      await API.post("/categories", {
+        name: name.trim(),
+      });
+
+      setSuccess("Category added successfully!");
       setName("");
       setOpen(false);
+
       fetchCategories();
 
     } catch (err) {
-      console.log(err);
+      console.error("ADD ERROR:", err);
+
+      setError(
+        err.response?.data?.message ||
+        "Failed to add category"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   // ================= DELETE =================
   const deleteCategory = async (id) => {
-    await API.delete(`/categories/${id}`);
-    fetchCategories();
+    const confirmDelete = confirm("Are you sure you want to delete this category?");
+    if (!confirmDelete) return;
+
+    try {
+      await API.delete(`/categories/${id}`);
+      fetchCategories();
+    } catch (err) {
+      console.error("DELETE ERROR:", err);
+    }
   };
 
   return (
@@ -62,13 +108,20 @@ export default function CategoriesPage() {
         Categories Dashboard
       </Typography>
 
+      {/* SUCCESS MESSAGE */}
+      {success && (
+        <Typography color="green" sx={{ mb: 2 }}>
+          {success}
+        </Typography>
+      )}
+
       {/* ADD BUTTON */}
       <Button variant="contained" onClick={() => setOpen(true)}>
         Add Category
       </Button>
 
       {/* MODAL */}
-      <Dialog open={open} onClose={() => setOpen(false)}>
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Add Category</DialogTitle>
 
         <DialogContent>
@@ -79,12 +132,23 @@ export default function CategoriesPage() {
             onChange={(e) => setName(e.target.value)}
             sx={{ mt: 2 }}
           />
+
+          {error && (
+            <Typography color="error" sx={{ mt: 1 }}>
+              {error}
+            </Typography>
+          )}
         </DialogContent>
 
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={addCategory}>
-            Save
+
+          <Button
+            variant="contained"
+            onClick={addCategory}
+            disabled={loading || !name.trim()}
+          >
+            {loading ? <CircularProgress size={20} /> : "Save"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -101,22 +165,31 @@ export default function CategoriesPage() {
           </TableHead>
 
           <TableBody>
-            {categories.map((cat) => (
-              <TableRow key={cat._id}>
-                <TableCell>{cat.name}</TableCell>
-                <TableCell>{cat.slug}</TableCell>
-
-                <TableCell>
-                  <Button
-                    color="error"
-                    onClick={() => deleteCategory(cat._id)}
-                  >
-                    Delete
-                  </Button>
+            {categories.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} align="center">
+                  No categories found
                 </TableCell>
-
               </TableRow>
-            ))}
+            ) : (
+              categories.map((cat) => (
+                <TableRow key={cat._id}>
+                  <TableCell>{cat.name}</TableCell>
+
+                  {/* ✅ SAFE SLUG */}
+                  <TableCell>{cat.slug || "-"}</TableCell>
+
+                  <TableCell>
+                    <Button
+                      color="error"
+                      onClick={() => deleteCategory(cat._id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </Paper>

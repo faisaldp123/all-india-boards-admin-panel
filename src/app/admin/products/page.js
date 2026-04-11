@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import API from "@/lib/api";
 
 import {
@@ -20,6 +21,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress,
 } from "@mui/material";
 
 export default function ProductsPage() {
@@ -27,6 +29,11 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState([]);
   const [images, setImages] = useState([]);
   const [open, setOpen] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const router = useRouter();
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -36,28 +43,42 @@ export default function ProductsPage() {
     price: "",
     stock: "",
     category: "",
-
     boardNumber: "",
     compatibleBrand: "",
     screenSize: "",
     resolution: "",
     panelType: "",
     ports: "",
-
     metaTitle: "",
     metaDescription: "",
     siteUrl: "",
   });
 
+  // 🔐 PROTECT ROUTE
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      router.push("/login");
+    }
+  }, []);
+
   // ================= FETCH =================
   const fetchProducts = async () => {
-    const res = await API.get("/products");
-    setProducts(res.data.products);
+    try {
+      const res = await API.get("/products");
+      setProducts(res.data.products);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const fetchCategories = async () => {
-    const res = await API.get("/categories");
-    setCategories(res.data);
+    try {
+      const res = await API.get("/categories");
+      setCategories(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
@@ -69,6 +90,8 @@ export default function ProductsPage() {
   const uploadImagesToCloudinary = async () => {
     const urls = [];
 
+    if (!images.length) return urls;
+
     for (let i = 0; i < images.length; i++) {
       const formData = new FormData();
       formData.append("file", images[i]);
@@ -77,16 +100,26 @@ export default function ProductsPage() {
         process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
       );
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      try {
+        const res = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
-      const data = await res.json();
-      urls.push(data.secure_url);
+        const data = await res.json();
+
+        if (!data.secure_url) {
+          throw new Error("Cloudinary upload failed");
+        }
+
+        urls.push(data.secure_url);
+      } catch (err) {
+        console.error("Cloudinary Error:", err);
+        throw err;
+      }
     }
 
     return urls;
@@ -94,7 +127,15 @@ export default function ProductsPage() {
 
   // ================= ADD PRODUCT =================
   const addProduct = async () => {
+    if (!newProduct.name || !newProduct.price || !newProduct.category) {
+      setError("Name, Price and Category are required");
+      return;
+    }
+
     try {
+      setLoading(true);
+      setError("");
+
       const imageUrls = await uploadImagesToCloudinary();
 
       const payload = {
@@ -126,7 +167,7 @@ export default function ProductsPage() {
 
       await API.post("/products", payload);
 
-      // reset form
+      // RESET
       setNewProduct({
         name: "",
         description: "",
@@ -151,14 +192,25 @@ export default function ProductsPage() {
       fetchProducts();
 
     } catch (err) {
-      console.log(err);
+      console.error(err);
+
+      setError(
+        err.response?.data?.message ||
+        "Failed to add product"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   // ================= DELETE =================
   const deleteProduct = async (id) => {
-    await API.delete(`/products/${id}`);
-    fetchProducts();
+    try {
+      await API.delete(`/products/${id}`);
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -180,24 +232,28 @@ export default function ProductsPage() {
 
             <Grid item xs={6}>
               <TextField fullWidth label="Name"
+                value={newProduct.name}
                 onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={6}>
               <TextField fullWidth label="Brand"
+                value={newProduct.brand}
                 onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={6}>
               <TextField fullWidth label="Model Number"
+                value={newProduct.modelNumber}
                 onChange={(e) => setNewProduct({ ...newProduct, modelNumber: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={6}>
               <TextField select fullWidth label="Category"
+                value={newProduct.category}
                 onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
               >
                 {categories.map((cat) => (
@@ -210,44 +266,31 @@ export default function ProductsPage() {
 
             <Grid item xs={12}>
               <TextField fullWidth multiline rows={2} label="Description"
+                value={newProduct.description}
                 onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={6}>
               <TextField type="number" fullWidth label="Price"
+                value={newProduct.price}
                 onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={6}>
               <TextField type="number" fullWidth label="Stock"
+                value={newProduct.stock}
                 onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
               />
             </Grid>
 
-            {/* SEO */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1">SEO Settings</Typography>
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextField fullWidth label="Meta Title"
-                onChange={(e) => setNewProduct({ ...newProduct, metaTitle: e.target.value })}
-              />
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextField fullWidth label="Site URL"
-                onChange={(e) => setNewProduct({ ...newProduct, siteUrl: e.target.value })}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField fullWidth multiline rows={2} label="Meta Description"
-                onChange={(e) => setNewProduct({ ...newProduct, metaDescription: e.target.value })}
-              />
-            </Grid>
+            {/* ERROR */}
+            {error && (
+              <Grid item xs={12}>
+                <Typography color="error">{error}</Typography>
+              </Grid>
+            )}
 
             {/* IMAGE */}
             <Grid item xs={12}>
@@ -259,7 +302,14 @@ export default function ProductsPage() {
 
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={addProduct}>Save</Button>
+
+          <Button
+            variant="contained"
+            onClick={addProduct}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={20} /> : "Save"}
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -277,20 +327,28 @@ export default function ProductsPage() {
           </TableHead>
 
           <TableBody>
-            {products.map((p) => (
-              <TableRow key={p._id}>
-                <TableCell>{p.name}</TableCell>
-                <TableCell>{p.brand}</TableCell>
-                <TableCell>₹{p.price}</TableCell>
-                <TableCell>{p.stock}</TableCell>
-
-                <TableCell>
-                  <Button color="error" onClick={() => deleteProduct(p._id)}>
-                    Delete
-                  </Button>
+            {products.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  No products found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              products.map((p) => (
+                <TableRow key={p._id}>
+                  <TableCell>{p.name}</TableCell>
+                  <TableCell>{p.brand}</TableCell>
+                  <TableCell>₹{p.price}</TableCell>
+                  <TableCell>{p.stock}</TableCell>
+
+                  <TableCell>
+                    <Button color="error" onClick={() => deleteProduct(p._id)}>
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </Paper>
