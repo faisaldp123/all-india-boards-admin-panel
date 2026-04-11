@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import API from "@/lib/api";
-import "./login.css"; // ✅ IMPORTANT
+import "./login.css";
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -18,12 +18,38 @@ export default function AdminLogin() {
 
       const res = await API.post("/auth/admin-login", form);
 
+      console.log("🔥 FULL RESPONSE:", res);
+      console.log("🔥 RESPONSE DATA:", res.data);
+
+      // ✅ SAFE CHECK
+      if (!res.data || !res.data.token) {
+        throw new Error("Token not received from server");
+      }
+
+      // ✅ STORE TOKEN
       localStorage.setItem("adminToken", res.data.token);
-      localStorage.setItem("adminRole", res.data.role);
+      localStorage.setItem("adminRole", res.data.role || "admin");
+
+      console.log(
+        "✅ Saved Token:",
+        localStorage.getItem("adminToken")
+      );
+
+      // ✅ VERIFY STORAGE
+      if (!localStorage.getItem("adminToken")) {
+        throw new Error("Token not saved in localStorage");
+      }
 
       router.push("/admin");
+
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid credentials");
+      console.log("❌ LOGIN ERROR:", err);
+
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        "Login failed"
+      );
     } finally {
       setLoading(false);
     }
