@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import API from "@/lib/api";
+import slugify from "slugify"; // ✅ import slugify here
 
 import {
   Box,
@@ -66,8 +67,12 @@ export default function CategoriesPage() {
       setError("");
       setSuccess("");
 
+      // ✅ Generate slug on frontend
+      const slug = slugify(name.trim(), { lower: true });
+
       await API.post("/categories", {
         name: name.trim(),
+        slug, // ✅ send slug along with name
       });
 
       setSuccess("Category added successfully!");
@@ -75,13 +80,11 @@ export default function CategoriesPage() {
       setOpen(false);
 
       fetchCategories();
-
     } catch (err) {
       console.error("ADD ERROR:", err);
 
       setError(
-        err.response?.data?.message ||
-        "Failed to add category"
+        err.response?.data?.message || "Failed to add category"
       );
     } finally {
       setLoading(false);
@@ -103,7 +106,6 @@ export default function CategoriesPage() {
 
   return (
     <Box sx={{ p: 3 }}>
-
       <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
         Categories Dashboard
       </Typography>
@@ -175,10 +177,7 @@ export default function CategoriesPage() {
               categories.map((cat) => (
                 <TableRow key={cat._id}>
                   <TableCell>{cat.name}</TableCell>
-
-                  {/* ✅ SAFE SLUG */}
                   <TableCell>{cat.slug || "-"}</TableCell>
-
                   <TableCell>
                     <Button
                       color="error"
@@ -193,7 +192,6 @@ export default function CategoriesPage() {
           </TableBody>
         </Table>
       </Paper>
-
     </Box>
   );
 }
