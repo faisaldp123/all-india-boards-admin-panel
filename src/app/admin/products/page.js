@@ -91,36 +91,40 @@ export default function ProductsPage() {
 
   // ================= CLOUDINARY =================
   const uploadImagesToCloudinary = async () => {
-    const urls = [];
+  const urls = [];
 
-    for (const file of images) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append(
-        "upload_preset",
-        process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-      );
+  if (!images || images.length === 0) return urls;
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+  const files = images.slice(0, 5);
 
-      const data = await res.json();
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append(
+      "upload_preset",
+      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+    );
 
-      if (!res.ok) {
-        console.error(data);
-        throw new Error(data.error?.message);
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
       }
+    );
 
-      urls.push(data.secure_url);
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error(data);
+      throw new Error(data.error?.message);
     }
 
-    return urls;
-  };
+    urls.push(data.secure_url);
+  }
+
+  return urls;
+};
 
   // ================= ADD PRODUCT =================
   const addProduct = async () => {
@@ -206,9 +210,15 @@ export default function ProductsPage() {
             </Grid>
 
             <Grid item xs={6}>
-              <TextField select fullWidth label="Category"
-                onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-              >
+              <TextField
+  select
+  fullWidth
+  label="Category"
+  value={newProduct.category || ""}   // ✅ ADD THIS
+  onChange={(e) =>
+    setNewProduct({ ...newProduct, category: e.target.value })
+  }
+>
                 {categories.map((c) => (
                   <MenuItem key={c._id} value={c._id}>
                     {c.name}
@@ -248,8 +258,40 @@ export default function ProductsPage() {
             </Grid>
 
             <Grid item xs={12}>
-              <input type="file" multiple onChange={(e) => setImages(Array.from(e.target.files))} />
+              <input
+  type="file"
+  multiple
+  accept="image/*"
+  onChange={(e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length > 5) {
+      alert("Maximum 5 images allowed");
+      return;
+    }
+
+    setImages(files);
+  }}
+/>
             </Grid>
+            <Grid item xs={12}>
+  <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 1 }}>
+    {images.map((file, i) => (
+      <img
+        key={i}
+        src={URL.createObjectURL(file)}
+        alt="preview"
+        width={70}
+        height={70}
+        style={{
+          borderRadius: 8,
+          objectFit: "cover",
+          border: "1px solid #ddd"
+        }}
+      />
+    ))}
+  </Box>
+</Grid>
 
             <Divider sx={{ my: 2, width: "100%" }} />
 
