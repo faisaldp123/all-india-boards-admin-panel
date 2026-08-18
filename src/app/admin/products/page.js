@@ -30,6 +30,7 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState([]);
   const [images, setImages] = useState([]);
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -58,6 +59,12 @@ export default function ProductsPage() {
     metaDescription: "",
     siteUrl: "",
   });
+
+  const emptyProduct = {
+    name: "", description: "", brand: "", modelNumber: "", price: "", stock: "", category: "",
+    boardNumber: "", compatibleBrand: "", screenSize: "", resolution: "", panelType: "", ports: "",
+    metaTitle: "", metaDescription: "", siteUrl: "", isNewArrival: false, isBestSeller: false,
+  };
 
   // 🔐 Protect Route
   useEffect(() => {
@@ -164,11 +171,18 @@ export default function ProductsPage() {
           ogImage: imageUrls[0] || "",
           siteUrl: newProduct.siteUrl,
         },
+        isNewArrival: Boolean(newProduct.isNewArrival),
+        isBestSeller: Boolean(newProduct.isBestSeller),
       };
 
-      await API.post("/products", payload);
+      if (editingId) {
+        await API.put(`/products/${editingId}`, payload);
+      } else {
+        await API.post("/products", payload);
+      }
 
       setOpen(false);
+      setEditingId(null);
       setImages([]);
       fetchProducts();
 
@@ -186,25 +200,37 @@ export default function ProductsPage() {
     fetchProducts();
   };
 
+  const editProduct = (product) => {
+    setEditingId(product._id);
+    setNewProduct({
+      ...emptyProduct,
+      name: product.name || "", description: product.description || "", brand: product.brand || "",
+      modelNumber: product.modelNumber || "", price: product.price || "", stock: product.stock || "",
+      category: product.category?._id || product.category || "", ...(product.specifications || {}), ...(product.seo || {}),
+    });
+    setOpen(true);
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
         Products Dashboard
       </Typography>
 
-      <Button variant="contained" onClick={() => setOpen(true)}>
+      <Button variant="contained" onClick={() => { setEditingId(null); setNewProduct(emptyProduct); setImages([]); setOpen(true); }}>
         Add Product
       </Button>
 
       {/* MODAL */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Add Product</DialogTitle>
+        <DialogTitle>{editingId ? "Update Product" : "Add Product"}</DialogTitle>
 
         <DialogContent>
           <Grid container spacing={2} mt={1}>
             {/* BASIC */}
             <Grid item xs={6}>
               <TextField fullWidth label="Name"
+                value={newProduct.name}
                 onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
               />
             </Grid>
@@ -229,30 +255,35 @@ export default function ProductsPage() {
 
             <Grid item xs={6}>
               <TextField fullWidth label="Brand"
+                value={newProduct.brand}
                 onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={6}>
               <TextField fullWidth label="Model Number"
+                value={newProduct.modelNumber}
                 onChange={(e) => setNewProduct({ ...newProduct, modelNumber: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={6}>
               <TextField type="number" fullWidth label="Price"
+                value={newProduct.price}
                 onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={6}>
               <TextField type="number" fullWidth label="Stock"
+                value={newProduct.stock}
                 onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField multiline rows={2} fullWidth label="Description"
+                value={newProduct.description}
                 onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
               />
             </Grid>
@@ -301,6 +332,7 @@ export default function ProductsPage() {
             {["boardNumber","compatibleBrand","screenSize","resolution","panelType","ports"].map((field) => (
               <Grid item xs={6} key={field}>
                 <TextField fullWidth label={field}
+                  value={newProduct[field] || ""}
                   onChange={(e) => setNewProduct({ ...newProduct, [field]: e.target.value })}
                 />
               </Grid>
@@ -313,20 +345,27 @@ export default function ProductsPage() {
 
             <Grid item xs={6}>
               <TextField fullWidth label="Meta Title"
+                value={newProduct.metaTitle}
                 onChange={(e) => setNewProduct({ ...newProduct, metaTitle: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={6}>
               <TextField fullWidth label="Site URL"
+                value={newProduct.siteUrl}
                 onChange={(e) => setNewProduct({ ...newProduct, siteUrl: e.target.value })}
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField multiline rows={2} fullWidth label="Meta Description"
+                value={newProduct.metaDescription}
                 onChange={(e) => setNewProduct({ ...newProduct, metaDescription: e.target.value })}
               />
+            </Grid>
+            <Grid item xs={12} sx={{ display: "flex", gap: 2 }}>
+              <label><input type="checkbox" checked={newProduct.isNewArrival} onChange={(e) => setNewProduct({ ...newProduct, isNewArrival: e.target.checked })} /> New arrival</label>
+              <label><input type="checkbox" checked={newProduct.isBestSeller} onChange={(e) => setNewProduct({ ...newProduct, isBestSeller: e.target.checked })} /> Best seller</label>
             </Grid>
 
             {error && (
@@ -341,7 +380,7 @@ export default function ProductsPage() {
           <Button onClick={() => setOpen(false)}>Cancel</Button>
 
           <Button variant="contained" onClick={addProduct} disabled={loading}>
-            {loading ? <CircularProgress size={20} /> : "Save"}
+            {loading ? <CircularProgress size={20} /> : editingId ? "Update Product" : "Save"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -351,8 +390,10 @@ export default function ProductsPage() {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>Image</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Brand</TableCell>
+              <TableCell>Category</TableCell>
               <TableCell>Price</TableCell>
               <TableCell>Stock</TableCell>
               <TableCell>Action</TableCell>
@@ -362,11 +403,14 @@ export default function ProductsPage() {
           <TableBody>
             {products.map((p) => (
               <TableRow key={p._id}>
+                <TableCell><img src={p.images?.[0] || "/images/hero/new-01.png"} alt={p.name} width={48} height={48} style={{ borderRadius: 8, objectFit: "cover" }} /></TableCell>
                 <TableCell>{p.name}</TableCell>
                 <TableCell>{p.brand}</TableCell>
+                <TableCell>{p.category?.name || "-"}</TableCell>
                 <TableCell>₹{p.price}</TableCell>
                 <TableCell>{p.stock}</TableCell>
                 <TableCell>
+                  <Button onClick={() => editProduct(p)}>Edit</Button>
                   <Button color="error" onClick={() => deleteProduct(p._id)}>
                     Delete
                   </Button>
