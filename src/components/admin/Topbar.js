@@ -10,7 +10,10 @@ import {
   Avatar,
   Menu,
   MenuItem,
-  Badge
+  Badge,
+  useTheme,
+  useMediaQuery,
+  Box
 } from "@mui/material";
 
 import {
@@ -18,12 +21,14 @@ import {
   LightMode,
   Notifications
 } from "@mui/icons-material";
+import MenuIcon from "@mui/icons-material/Menu";
 
 import { ColorModeContext } from "./ThemeProvider";
 
-export default function Topbar() {
-
+export default function Topbar({ onSidebarToggle }) {
   const { toggleTheme } = useContext(ColorModeContext);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -41,34 +46,40 @@ export default function Topbar() {
   };
 
   return (
-
-    <AppBar position="static" color="primary">
-
+    <AppBar position="static" color="default" sx={{ width: "100%" }}>
       <Toolbar sx={{ justifyContent: "space-between" }}>
-
-        <Typography variant="h6">
-          All India Boards Admin
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={onSidebarToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+            All India Boards Admin
+          </Typography>
+        </Box>
 
         <div>
-
           {/* Notifications */}
           <IconButton color="inherit">
-
             <Badge badgeContent={3} color="error">
               <Notifications />
             </Badge>
-
           </IconButton>
 
           {/* Theme Toggle */}
           <IconButton color="inherit" onClick={toggleTheme}>
-            <DarkMode />
+            {theme.palette.mode === "light" ? <DarkMode /> : <LightMode />}
           </IconButton>
 
           {/* User Avatar */}
           <IconButton color="inherit" onClick={openMenu}>
-            <Avatar>A</Avatar>
+            <Avatar sx={{ width: 32, height: 32, fontSize: "0.9rem", bgcolor: "primary.main" }}>A</Avatar>
           </IconButton>
 
           <Menu
@@ -76,21 +87,11 @@ export default function Topbar() {
             open={Boolean(anchorEl)}
             onClose={closeMenu}
           >
-
-            <MenuItem>Profile</MenuItem>
-
-            <MenuItem onClick={logout}>
-              Logout
-            </MenuItem>
-
+            <MenuItem onClick={closeMenu}>Profile</MenuItem>
+            <MenuItem onClick={logout}>Logout</MenuItem>
           </Menu>
-
         </div>
-
       </Toolbar>
-
     </AppBar>
-
   );
-
 }
