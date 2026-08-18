@@ -27,6 +27,7 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -55,6 +56,17 @@ export default function CategoriesPage() {
     fetchCategories();
   }, []);
 
+  const uploadImageToCloudinary = async () => {
+    if (!imageFile) return "";
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || "Image upload failed");
+    return data.secure_url;
+  };
+
   // ================= ADD CATEGORY =================
   const addCategory = async () => {
     if (!name.trim()) {
@@ -69,14 +81,17 @@ export default function CategoriesPage() {
 
       // ✅ Generate slug on frontend
       const slug = slugify(name.trim(), { lower: true });
+      const image = await uploadImageToCloudinary();
 
       await API.post("/categories", {
         name: name.trim(),
+        image,
         slug, // ✅ send slug along with name
       });
 
       setSuccess("Category added successfully!");
       setName("");
+      setImageFile(null);
       setOpen(false);
 
       fetchCategories();
@@ -135,6 +150,12 @@ export default function CategoriesPage() {
             sx={{ mt: 2 }}
           />
 
+          <Button component="label" variant="outlined" sx={{ mt: 2 }}>
+            {imageFile ? "Change category image" : "Upload category image"}
+            <input hidden type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+          </Button>
+          {imageFile && <Box component="img" src={URL.createObjectURL(imageFile)} alt="Category preview" sx={{ display: "block", mt: 2, width: 120, height: 80, objectFit: "cover", borderRadius: 1 }} />}
+
           {error && (
             <Typography color="error" sx={{ mt: 1 }}>
               {error}
@@ -160,6 +181,7 @@ export default function CategoriesPage() {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>Image</TableCell>
               <TableCell>Category Name</TableCell>
               <TableCell>Slug</TableCell>
               <TableCell>Action</TableCell>
@@ -169,13 +191,14 @@ export default function CategoriesPage() {
           <TableBody>
             {categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} align="center">
+                <TableCell colSpan={4} align="center">
                   No categories found
                 </TableCell>
               </TableRow>
             ) : (
               categories.map((cat) => (
                 <TableRow key={cat._id}>
+                  <TableCell>{cat.image ? <Box component="img" src={cat.image} alt={cat.name} sx={{ width: 48, height: 48, borderRadius: 1, objectFit: "cover" }} /> : "-"}</TableCell>
                   <TableCell>{cat.name}</TableCell>
                   <TableCell>{cat.slug || "-"}</TableCell>
                   <TableCell>
