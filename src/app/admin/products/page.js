@@ -412,7 +412,7 @@ export default function ProductsPage() {
           <TableBody>
             {products.map((p) => (
               <TableRow key={p._id}>
-                <TableCell>{p.images?.[0] ? <img src={p.images[0]} alt={p.name} width={48} height={48} style={{ borderRadius: 8, objectFit: "cover" }} /> : "-"}</TableCell>
+                <TableCell>{p.images?.[0] || p.seo?.ogImage ? <img src={p.images?.[0] || p.seo.ogImage} alt={p.name} width={48} height={48} style={{ borderRadius: 8, objectFit: "cover" }} /> : "-"}</TableCell>
                 <TableCell>{p.name}</TableCell>
                 <TableCell>{p.brand}</TableCell>
                 <TableCell>{p.category?.name || "-"}</TableCell>
