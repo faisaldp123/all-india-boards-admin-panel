@@ -29,6 +29,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -144,7 +145,9 @@ export default function ProductsPage() {
       setLoading(true);
       setError("");
 
-      const imageUrls = await uploadImagesToCloudinary();
+      const uploadedImageUrls = await uploadImagesToCloudinary();
+      // Keep saved images when editing unless the admin selects replacements.
+      const imageUrls = uploadedImageUrls.length ? uploadedImageUrls : existingImages;
 
       const payload = {
         name: newProduct.name,
@@ -184,6 +187,7 @@ export default function ProductsPage() {
       setOpen(false);
       setEditingId(null);
       setImages([]);
+      setExistingImages([]);
       fetchProducts();
 
     } catch (err) {
@@ -208,6 +212,8 @@ export default function ProductsPage() {
       modelNumber: product.modelNumber || "", price: product.price || "", stock: product.stock || "",
       category: product.category?._id || product.category || "", ...(product.specifications || {}), ...(product.seo || {}),
     });
+    setImages([]);
+    setExistingImages(Array.isArray(product.images) ? product.images.filter(Boolean) : []);
     setOpen(true);
   };
 
@@ -217,7 +223,7 @@ export default function ProductsPage() {
         Products Dashboard
       </Typography>
 
-      <Button variant="contained" onClick={() => { setEditingId(null); setNewProduct(emptyProduct); setImages([]); setOpen(true); }}>
+      <Button variant="contained" onClick={() => { setEditingId(null); setNewProduct(emptyProduct); setImages([]); setExistingImages([]); setOpen(true); }}>
         Add Product
       </Button>
 
@@ -305,8 +311,11 @@ export default function ProductsPage() {
   }}
 />
             </Grid>
-            <Grid item xs={12}>
+<Grid item xs={12}>
   <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 1 }}>
+    {existingImages.map((url, i) => (
+      <img key={`saved-${i}`} src={url} alt="Current product" width={70} height={70} style={{ borderRadius: 8, objectFit: "cover", border: "1px solid #ddd" }} />
+    ))}
     {images.map((file, i) => (
       <img
         key={i}
@@ -403,7 +412,7 @@ export default function ProductsPage() {
           <TableBody>
             {products.map((p) => (
               <TableRow key={p._id}>
-                <TableCell><img src={p.images?.[0] || "/images/hero/new-01.png"} alt={p.name} width={48} height={48} style={{ borderRadius: 8, objectFit: "cover" }} /></TableCell>
+                <TableCell>{p.images?.[0] ? <img src={p.images[0]} alt={p.name} width={48} height={48} style={{ borderRadius: 8, objectFit: "cover" }} /> : "-"}</TableCell>
                 <TableCell>{p.name}</TableCell>
                 <TableCell>{p.brand}</TableCell>
                 <TableCell>{p.category?.name || "-"}</TableCell>
