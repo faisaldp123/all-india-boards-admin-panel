@@ -103,6 +103,12 @@ export default function ProductsPage() {
 
   if (!images || images.length === 0) return urls;
 
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  if (!cloudName || !preset) {
+    throw new Error("Cloudinary upload settings are missing in environment variables (.env.local)");
+  }
+
   const files = images.slice(0, 5);
 
   for (const file of files) {
@@ -110,11 +116,11 @@ export default function ProductsPage() {
     formData.append("file", file);
     formData.append(
       "upload_preset",
-      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+      preset
     );
 
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
       {
         method: "POST",
         body: formData,
@@ -213,7 +219,9 @@ export default function ProductsPage() {
       category: product.category?._id || product.category || "", ...(product.specifications || {}), ...(product.seo || {}),
     });
     setImages([]);
-    setExistingImages(Array.isArray(product.images) ? product.images.filter(Boolean) : []);
+    setExistingImages(
+      Array.isArray(product.images) ? product.images.filter(Boolean) : []
+    );
     setOpen(true);
   };
 
@@ -412,7 +420,7 @@ export default function ProductsPage() {
           <TableBody>
             {products.map((p) => (
               <TableRow key={p._id}>
-                <TableCell>{p.images?.[0] || p.seo?.ogImage ? <img src={p.images?.[0] || p.seo.ogImage} alt={p.name} width={48} height={48} style={{ borderRadius: 8, objectFit: "cover" }} /> : "-"}</TableCell>
+                <TableCell>{p.images?.[0] ? <img src={p.images[0]} alt={p.name} width={48} height={48} style={{ borderRadius: 8, objectFit: "cover" }} /> : "-"}</TableCell>
                 <TableCell>{p.name}</TableCell>
                 <TableCell>{p.brand}</TableCell>
                 <TableCell>{p.category?.name || "-"}</TableCell>

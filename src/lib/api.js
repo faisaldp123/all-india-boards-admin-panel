@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://all-india-boards-admin-backend.onrender.com/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://all-india-boards-admin-backend.onrender.com/api",
   timeout: 10000,
 });
 
