@@ -14,7 +14,9 @@ import {
   TableBody,
   Chip,
   CircularProgress,
+  TableContainer,
 } from "@mui/material";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -38,12 +40,10 @@ export default function UsersPage() {
   }, []);
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
-        Users Management
-      </Typography>
+    <Box>
+      <PageHeader title="Customers" description="View customer accounts and access roles." />
 
-      <Paper sx={{ p: 2 }}>
+      <Paper>
         {loading ? (
           <Box textAlign="center">
             <CircularProgress />
@@ -51,7 +51,7 @@ export default function UsersPage() {
         ) : error ? (
           <Typography color="error">{error}</Typography>
         ) : (
-          <Table>
+          <TableContainer><Table>
             <TableHead>
               <TableRow>
                 <TableCell><b>Name</b></TableCell>
@@ -90,7 +90,7 @@ export default function UsersPage() {
                 ))
               )}
             </TableBody>
-          </Table>
+          </Table></TableContainer>
         )}
       </Paper>
     </Box>

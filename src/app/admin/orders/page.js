@@ -19,10 +19,12 @@ import {
   Collapse,
   IconButton,
   Button,
+  TableContainer,
 } from "@mui/material";
 
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -154,10 +156,8 @@ export default function OrdersPage() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        Orders Management
-      </Typography>
+    <Box>
+      <PageHeader title="Orders" description="Track fulfilment, payments and customer delivery details." />
 
       <Paper>
         {loading ? (
@@ -165,7 +165,7 @@ export default function OrdersPage() {
             <CircularProgress />
           </Box>
         ) : (
-          <Table>
+          <TableContainer><Table>
             <TableHead>
               <TableRow>
                 <TableCell />
@@ -303,7 +303,7 @@ export default function OrdersPage() {
                 </>
               ))}
             </TableBody>
-          </Table>
+          </Table></TableContainer>
         )}
       </Paper>
     </Box>

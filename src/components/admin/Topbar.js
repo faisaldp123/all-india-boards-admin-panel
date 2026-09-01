@@ -47,7 +47,7 @@ export default function Topbar({ onSidebarToggle }) {
 
   return (
     <AppBar position="static" color="default" sx={{ width: "100%" }}>
-      <Toolbar sx={{ justifyContent: "space-between" }}>
+      <Toolbar sx={{ minHeight: 72, px: { xs: 2, sm: 3 }, justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", alignItems: "center" }}>
           {isMobile && (
             <IconButton
@@ -59,14 +59,14 @@ export default function Topbar({ onSidebarToggle }) {
               <MenuIcon />
             </IconButton>
           )}
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            All India Boards Admin
+          <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: "-0.03em", fontSize: { xs: "1rem", sm: "1.15rem" } }}>
+            All India Boards <Box component="span" sx={{ color: "primary.main" }}>Admin</Box>
           </Typography>
         </Box>
 
-        <div>
+        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0, sm: 0.5 } }}>
           {/* Notifications */}
-          <IconButton color="inherit">
+          <IconButton color="inherit" sx={{ display: { xs: "none", sm: "inline-flex" } }}>
             <Badge badgeContent={3} color="error">
               <Notifications />
             </Badge>
@@ -90,7 +90,7 @@ export default function Topbar({ onSidebarToggle }) {
             <MenuItem onClick={closeMenu}>Profile</MenuItem>
             <MenuItem onClick={logout}>Logout</MenuItem>
           </Menu>
-        </div>
+        </Box>
       </Toolbar>
     </AppBar>
   );

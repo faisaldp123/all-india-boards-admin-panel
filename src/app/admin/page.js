@@ -22,6 +22,7 @@ import RevenueChart from "@/components/admin/RevenueChart";
 import OrdersChart from "@/components/admin/OrdersChart";
 import RecentOrders from "@/components/admin/RecentOrders";
 import LowStock from "@/components/admin/LowStock";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -61,9 +62,7 @@ export default function Dashboard() {
 
   return (
     <Box>
-      <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
-        Admin Dashboard
-      </Typography>
+      <PageHeader title="Dashboard" description="A quick view of your store performance and operations." />
 
       <Grid container spacing={3}>
 
@@ -106,35 +105,39 @@ export default function Dashboard() {
 
         {/* 📊 CHARTS */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, borderRadius: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+          <Paper sx={{ p: { xs: 2, sm: 3 }, height: "100%" }}>
+            <Typography variant="h6" sx={{ mb: 0.5 }}>
               Monthly Revenue
             </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Revenue trend over time</Typography>
             <RevenueChart data={stats?.monthlyRevenue || []} />
           </Paper>
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, borderRadius: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+          <Paper sx={{ p: { xs: 2, sm: 3 }, height: "100%" }}>
+            <Typography variant="h6" sx={{ mb: 0.5 }}>
               Monthly Orders
             </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Orders received each month</Typography>
             <OrdersChart data={stats?.monthlyOrders || []} />
           </Paper>
         </Grid>
 
         {/* 📦 ORDER STATUS */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 2, borderRadius: 3 }}>
+          <Paper sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Order Status Overview
             </Typography>
 
-            {stats?.orderStatusStats?.map((item, i) => (
-              <Typography key={i}>
-                {item._id}: {item.count}
-              </Typography>
-            ))}
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              {stats?.orderStatusStats?.map((item, i) => (
+                <Box key={i} sx={{ px: 1.5, py: 0.75, borderRadius: 2, bgcolor: "action.hover", fontSize: "0.875rem" }}>
+                  <strong>{item.count}</strong>&nbsp; {item._id || "Unknown"}
+                </Box>
+              ))}
+            </Box>
           </Paper>
         </Grid>
 

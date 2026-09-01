@@ -21,11 +21,11 @@ export default function AdminLayout({ children }) {
 
   return (
     <CustomThemeProvider>
-      <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
         <Sidebar mobileOpen={mobileOpen} onMobileClose={handleDrawerClose} />
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Topbar onSidebarToggle={handleDrawerToggle} />
-          <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Box component="main" sx={{ maxWidth: 1600, mx: "auto", p: { xs: 2, sm: 3, lg: 4 }, width: "100%" }}>
             {children}
           </Box>
         </Box>
