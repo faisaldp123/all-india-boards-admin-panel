@@ -12,8 +12,13 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TableContainer,
+  Chip,
+  IconButton,
   Button,
 } from "@mui/material";
+import { DeleteOutline, ThumbUpOutlined } from "@mui/icons-material";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState([]);
@@ -38,11 +43,11 @@ export default function ReviewsPage() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4">Reviews</Typography>
+    <Box>
+      <PageHeader title="Reviews" description="Moderate product feedback and customer engagement." />
 
-      <Paper sx={{ mt: 2 }}>
-        <Table>
+      <Paper>
+        <TableContainer><Table>
           <TableHead>
             <TableRow>
               <TableCell>User</TableCell>
@@ -59,7 +64,7 @@ export default function ReviewsPage() {
               <TableRow key={r._id}>
                 <TableCell>{r.userId?.name}</TableCell>
                 <TableCell>{r.productId?.name}</TableCell>
-                <TableCell>{r.rating}</TableCell>
+                <TableCell><Chip label={`${r.rating}/5`} size="small" color="warning" variant="outlined" /></TableCell>
                 <TableCell>{r.comment}</TableCell>
                 <TableCell>{r.likes}</TableCell>
 
@@ -75,7 +80,7 @@ export default function ReviewsPage() {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </Table></TableContainer>
       </Paper>
     </Box>
   );

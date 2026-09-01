@@ -23,7 +23,10 @@ import {
   DialogActions,
   CircularProgress,
   Divider,
+  TableContainer,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -226,14 +229,8 @@ export default function ProductsPage() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
-        Products Dashboard
-      </Typography>
-
-      <Button variant="contained" onClick={() => { setEditingId(null); setNewProduct(emptyProduct); setImages([]); setExistingImages([]); setOpen(true); }}>
-        Add Product
-      </Button>
+    <Box>
+      <PageHeader title="Products" description="Manage your catalogue, inventory and product information." action={<Button fullWidth startIcon={<AddIcon />} variant="contained" onClick={() => { setEditingId(null); setNewProduct(emptyProduct); setImages([]); setExistingImages([]); setOpen(true); }}>Add product</Button>} />
 
       {/* MODAL */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
@@ -403,8 +400,8 @@ export default function ProductsPage() {
       </Dialog>
 
       {/* TABLE */}
-      <Paper sx={{ mt: 3 }}>
-        <Table>
+      <Paper>
+        <TableContainer><Table>
           <TableHead>
             <TableRow>
               <TableCell>Image</TableCell>
@@ -420,7 +417,7 @@ export default function ProductsPage() {
           <TableBody>
             {products.map((p) => (
               <TableRow key={p._id}>
-                <TableCell>{p.images?.[0] ? <img src={p.images[0]} alt={p.name} width={48} height={48} style={{ borderRadius: 8, objectFit: "cover" }} /> : "-"}</TableCell>
+                <TableCell>{p.images?.[0] || p.seo?.ogImage ? <img src={p.images?.[0] || p.seo.ogImage} alt={p.name} width={48} height={48} style={{ borderRadius: 8, objectFit: "cover" }} /> : "-"}</TableCell>
                 <TableCell>{p.name}</TableCell>
                 <TableCell>{p.brand}</TableCell>
                 <TableCell>{p.category?.name || "-"}</TableCell>
@@ -435,7 +432,7 @@ export default function ProductsPage() {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </Table></TableContainer>
       </Paper>
     </Box>
   );

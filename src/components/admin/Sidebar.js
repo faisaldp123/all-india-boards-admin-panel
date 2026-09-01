@@ -24,7 +24,8 @@ import {
   Reviews,
   ViewCarousel,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Settings
 } from "@mui/icons-material";
 
 import Link from "next/link";
@@ -48,39 +49,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
     { label: "Categories", icon: <Category />, path: "/admin/categories" },
     { label: "Orders", icon: <ShoppingCart />, path: "/admin/orders" },
     { label: "Users", icon: <People />, path: "/admin/users" },
-    { label: "Reviews", icon: <Reviews />, path: "/admin/reviews" }
-    ,{ label: "Homepage", icon: <ViewCarousel />, path: "/admin/homepage" }
+    { label: "Reviews", icon: <Reviews />, path: "/admin/reviews" },
+    { label: "Homepage", icon: <ViewCarousel />, path: "/admin/homepage" }
   ];
 
   const drawerContent = (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      {/* Toggle Button - only on desktop */}
-      {!isMobile && (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: open ? "flex-end" : "center",
-            p: 1,
-            borderBottom: "1px solid",
-            borderColor: "divider"
-          }}
-        >
-          <IconButton onClick={toggleSidebar}>
-            {open ? <ChevronLeft /> : <ChevronRight />}
-          </IconButton>
-        </Box>
-      )}
+      <Box sx={{ height: 72, px: open || isMobile ? 2.5 : 1, display: "flex", alignItems: "center", justifyContent: open || isMobile ? "space-between" : "center", borderBottom: "1px solid", borderColor: "divider" }}>
+        {(open || isMobile) && <Box sx={{ fontWeight: 800, letterSpacing: "-0.04em", whiteSpace: "nowrap" }}>AIB <Box component="span" sx={{ color: "primary.main" }}>Console</Box></Box>}
+        {!isMobile && <IconButton onClick={toggleSidebar} size="small">{open ? <ChevronLeft /> : <ChevronRight />}</IconButton>}
+      </Box>
 
-      {/* Brand logo space inside sidebar for mobile */}
-      {isMobile && (
-        <Box sx={{ p: 2, borderBottom: "1px solid", borderColor: "divider" }}>
-          <Box sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-            All India Boards
-          </Box>
-        </Box>
-      )}
-
-      <List sx={{ p: 1 }}>
+      <List sx={{ p: 1.5, flexGrow: 1 }}>
         {menu.map((item) => (
           <ListItemButton
             key={item.label}
@@ -89,17 +69,17 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             selected={pathname === item.path}
             sx={{
               px: (open || isMobile) ? 2 : 1.5,
-              borderRadius: "8px",
-              mb: 0.5,
+              borderRadius: "10px",
+              mb: 0.75,
               "&.Mui-selected": {
-                backgroundColor: "primary.main",
+                backgroundColor: "rgba(49, 86, 217, 0.12)",
+                color: "primary.main",
                 color: "primary.contrastText",
                 "& .MuiListItemIcon-root": {
-                  color: "primary.contrastText"
+                  color: "primary.main"
                 },
                 "&:hover": {
-                  backgroundColor: "primary.main",
-                  opacity: 0.9
+                  backgroundColor: "rgba(49, 86, 217, 0.18)"
                 }
               }
             }}

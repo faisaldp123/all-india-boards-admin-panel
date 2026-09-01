@@ -6,18 +6,18 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Paper
+  Paper, Typography, TableContainer, Chip
 } from "@mui/material";
 
 export default function RecentOrders({ orders }) {
 
   return (
 
-    <Paper sx={{ p:2 }}>
-
-      <h3>Recent Orders</h3>
-
-      <Table>
+    <Paper sx={{ p: { xs: 2, sm: 3 }, height: "100%" }}>
+      <Typography variant="h6">Recent orders</Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Latest customer purchases</Typography>
+      <TableContainer>
+      <Table size="small">
 
         <TableHead>
 
@@ -38,7 +38,7 @@ export default function RecentOrders({ orders }) {
 
             <TableRow key={order._id}>
 
-              <TableCell>{order._id}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>#{order._id.slice(-6).toUpperCase()}</TableCell>
 
               <TableCell>
                 {order.userId?.email || "Customer"}
@@ -49,7 +49,7 @@ export default function RecentOrders({ orders }) {
               </TableCell>
 
               <TableCell>
-                {order.orderStatus}
+                <Chip label={order.orderStatus} size="small" variant="outlined" />
               </TableCell>
 
             </TableRow>
@@ -59,6 +59,7 @@ export default function RecentOrders({ orders }) {
         </TableBody>
 
       </Table>
+      </TableContainer>
 
     </Paper>
 

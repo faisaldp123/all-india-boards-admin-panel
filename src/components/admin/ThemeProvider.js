@@ -17,7 +17,7 @@ export default function CustomThemeProvider({ children }) {
     palette: {
       mode,
       primary: {
-        main: "#111111",
+        main: "#3156d9",
         contrastText: "#ffffff",
       },
       secondary: {
@@ -25,8 +25,8 @@ export default function CustomThemeProvider({ children }) {
         contrastText: "#ffffff",
       },
       background: {
-        default: mode === "light" ? "#f9fafb" : "#121212",
-        paper: mode === "light" ? "#ffffff" : "#1e1e1e",
+        default: mode === "light" ? "#f6f7fb" : "#101522",
+        paper: mode === "light" ? "#ffffff" : "#192132",
       },
       text: {
         primary: mode === "light" ? "#111111" : "#ffffff",
@@ -78,16 +78,16 @@ export default function CustomThemeProvider({ children }) {
       MuiPaper: {
         styleOverrides: {
           root: {
-            boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
-            borderRadius: "12px",
-            border: `1px solid ${mode === "light" ? "#e5e7eb" : "#2d2d2d"}`,
+            boxShadow: "0 3px 14px rgba(15, 23, 42, 0.05)",
+            borderRadius: "16px",
+            border: `1px solid ${mode === "light" ? "#e9edf5" : "#2d2d2d"}`,
           },
         },
       },
       MuiButton: {
         styleOverrides: {
           root: {
-            borderRadius: "6px",
+            borderRadius: "10px",
             padding: "8px 16px",
             boxShadow: "none",
             "&:hover": {
@@ -95,10 +95,10 @@ export default function CustomThemeProvider({ children }) {
             },
           },
           contained: {
-            backgroundColor: "#111111",
+            backgroundColor: "#3156d9",
             color: "#ffffff",
             "&:hover": {
-              backgroundColor: "#222222",
+              backgroundColor: "#2747bc",
             },
           },
           outlined: {
@@ -118,8 +118,8 @@ export default function CustomThemeProvider({ children }) {
             fontSize: "0.72rem",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
-            backgroundColor: mode === "light" ? "#fdf2f8" : "#1f1f1f",
-            color: mode === "light" ? "#6b2148" : "#d1d5db",
+            backgroundColor: mode === "light" ? "#f7f8fc" : "#1f1f1f",
+            color: mode === "light" ? "#64748b" : "#d1d5db",
             borderBottom: `1px solid ${mode === "light" ? "#e5e7eb" : "#2d2d2d"}`,
           },
           root: {

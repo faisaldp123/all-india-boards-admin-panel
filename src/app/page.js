@@ -91,6 +91,8 @@ export default function AdminLogin() {
           {loading ? "Logging in..." : "Login"}
         </button>
 
+        <a href="/forgot-password" className="login-footer">Forgot your password?</a>
+
         <div className="login-footer">
           Secure Admin Access
         </div>
